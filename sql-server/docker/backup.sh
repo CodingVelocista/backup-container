@@ -1,4 +1,4 @@
-  #!/bin/bash
+#!/bin/bash
 
 # =================================================================================================================
 # Usage:
@@ -329,7 +329,7 @@ function readConf(){
       if [ -z "${quiet}" ]; then
         echo "Reading backup config from environment variables ..." >&2
       fi
-      _value="${DATABASE_SERVICE_NAME},${DEFAULT_PORT}/${MSSQL_DATABASE}" #TODO: Update for Sql Server
+      _value="${DATABASE_SERVICE_NAME}/${MSSQL_DATABASE}" #TODO: Update for Sql Server
     fi
 
     echo "${_value}"
@@ -556,7 +556,7 @@ function backupDatabase(){
     _password=$(getPassword ${_databaseSpec})
 
 	_targetSql="DATABASE"
-	_backupType = "-FULL-DATABASE"
+	_backupType="-FULL-DATABASE"
 
     echoGreen "\nBacking up ${_databaseSpec} ..."
 
@@ -571,10 +571,10 @@ function backupDatabase(){
 	fi;
 
 	_backupFile="${_fileName}${_backupType}${BACKUP_FILE_EXTENSION}"
-    
+
 	echo "Backing up $_database on $_hostname"
 
-	sqlcmd -S $_hostname -U ${_username} -P ${_password} -d master -Q "BACKUP $_targetSql $_database TO DISK='$_backupFile"
+	sqlcmd -S $_hostname -U ${_username} -P ${_password} -d master -Q "BACKUP $_targetSql $_database TO DISK='$_backupFile'"
 
     # Get the status code from BACKUP.  ${?} would provide the status of the last command
 
@@ -1079,7 +1079,6 @@ function startLegacy(){
   )
 }
 
- #TODO: Update for Sql Server
 function startServer(){
   (
     _databaseSpec=${1}
@@ -1088,6 +1087,7 @@ function startServer(){
     MSSQL_DATABASE=$(getDatabaseName "${_databaseSpec}") \
     MSSQL_USER=$(getUsername "${_databaseSpec}") \
     MSSQL_PASSWORD=$(getPassword "${_databaseSpec}") \
+ #TODO: Update for Sql Server
     run-postgresql >/dev/null 2>&1 &
 
     # Wait for server to start ...
@@ -1305,11 +1305,15 @@ function getDbSize(){
 # ======================================================================================
 # Set Defaults
 # --------------------------------------------------------------------------------------
-export BACKUP_FILE_EXTENSION=".bak" 
-export DEFAULT_PORT=${MSSQL_PORT_NUM:-4433}
-export DATABASE_SERVICE_NAME=${DATABASE_SERVICE_NAME:-localhost}
+#export BACKUP_FILE_EXTENSION=".bak" 
+#export DEFAULT_PORT=${MSSQL_PORT_NUM:-4433}
+export DEFAULT_PORT=""
+export DATABASE_SERVICE_NAME=${DATABASE_SERVICE_NAME:-sql-express}
 export MSSQL_DATABASE=${MSSQL_DATABASE:-ess}
-export BACKUP_LOG_ONLY=${$BACKUP_LOG_ONLY:-false}
+export BACKUP_LOG_ONLY=${BACKUP_LOG_ONLY:-false}
+
+export MSSQL_USER="sa"
+export MSSQL_PASSWORD="dockerPa\$\$word"
 
 # Supports:
 # - daily
@@ -1317,6 +1321,7 @@ export BACKUP_LOG_ONLY=${$BACKUP_LOG_ONLY:-false}
 export BACKUP_STRATEGY=$(echo "${BACKUP_STRATEGY:-daily}" | tr '[:upper:]' '[:lower:]')
 export BACKUP_PERIOD=${BACKUP_PERIOD:-1d}
 export ROOT_BACKUP_DIR=${ROOT_BACKUP_DIR:-${BACKUP_DIR:-/backups/}}
+#export ROOT_BACKUP_DIR="c:/output/backups/"
 export BACKUP_CONF=${BACKUP_CONF:-backup.conf}
 
 # Used to prune the total number of backup when using the daily backup strategy.
