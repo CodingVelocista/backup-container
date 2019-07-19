@@ -59,4 +59,4 @@ USER 10001
 ENTRYPOINT [ "/opt/mssql-tools/bin/uid_entrypoint" ]
 
 # Set the default CMD.
-CMD sh /backup.sh
+CMD /backup.sh
